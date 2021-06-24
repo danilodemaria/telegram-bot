@@ -1,16 +1,7 @@
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
-
-const BRLFormatter = Intl.NumberFormat('pt-BR', {
-  style: 'currency',
-  currency: 'BRL',
-});
-
-function formatBRL(value) {
-  return BRLFormatter.format(value);
-}
-
 require('dotenv').config();
+const { formatBRL } = require('./utils/Formatters');
 
 const token = process.env.TELEGRAM_TOKEN;
 let bot;
@@ -29,7 +20,10 @@ bot.onText(/\/dolar/, (msg, match) => {
     .then((response) => {
       bot.sendMessage(
         chatId,
-        `O valor atual do dólar é ${formatBRL(response.data.price)}`
+        `<b>Olá ${msg.from.first_name}, o valor atual do dólar é ${formatBRL(
+          response.data.price
+        )}</b>`,
+        { parse_mode: 'HTML' }
       );
     })
     .catch((error) => {
@@ -66,4 +60,14 @@ bot.onText(/\/mike/, (msg, match) => {
   const chatId = msg.chat.id;
   const msgResponse = `<b>Aprovado no TTC2.</b>`;
   bot.sendMessage(chatId, msgResponse, { parse_mode: 'HTML' });
+});
+
+bot.onText(/\/foto/, (msg, match) => {
+  const chatId = msg.chat.id;
+  bot.sendPhoto(chatId, './images/1.png', { caption: 'Vinicius ! \nBlinder ' });
+});
+
+bot.onText(/\/fotnilo/, (msg, match) => {
+  const chatId = msg.chat.id;
+  bot.sendPhoto(chatId, './images/2.png', { caption: 'Danilo ! \nDelas ' });
 });
