@@ -1,7 +1,7 @@
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
 require('dotenv').config();
-const { formatBRL } = require('./utils/Formatters');
+const { formatBRL, numberWithPoints } = require('./utils/Formatters');
 
 const token = process.env.TELEGRAM_TOKEN;
 let bot;
@@ -70,4 +70,42 @@ bot.onText(/\/foto/, (msg, match) => {
 bot.onText(/\/fotnilo/, (msg, match) => {
   const chatId = msg.chat.id;
   bot.sendPhoto(chatId, './images/2.png', { caption: 'Danilo ! \nDelas ' });
+});
+
+bot.onText(/\/covid/, (msg, match) => {
+  const chatId = msg.chat.id;
+  axios
+    .get('https://covid-api.mmediagroup.fr/v1/cases?country=Brazil')
+    .then((response) => {
+      const { All } = response.data;
+      const { confirmed, recovered, deaths, population } = All;
+      const {
+        confirmed: confirmados,
+        recovered: recuperados,
+        deaths: mortes,
+      } = response.data['Santa Catarina'];
+      const covidInfo = `
+      <b>Olá ${
+        msg.from.first_name
+      },\n\nBRASIL\n\nCasos confirmados: ${numberWithPoints(
+        confirmed
+      )}\nCasos recuperados: ${numberWithPoints(
+        recovered
+      )}\nMortes: ${numberWithPoints(
+        deaths
+      )}\nPopulação Atual: ${numberWithPoints(
+        population
+      )}\n\nSANTA CATARINA\n\nCasos confirmados: ${numberWithPoints(
+        confirmados
+      )}\nCasos recuperados: ${numberWithPoints(
+        recuperados
+      )}\nMortes: ${numberWithPoints(mortes)}\n      
+      </b>`;
+
+      bot.sendMessage(chatId, covidInfo, { parse_mode: 'HTML' });
+    })
+    .catch((error) => {
+      const errorText = `<b>Ocorreu um erro ao buscar o valor do dolar. Tente novamente mais tarde.</b>`;
+      bot.sendMessage(chatId, errorText, { parse_mode: 'HTML' });
+    });
 });
