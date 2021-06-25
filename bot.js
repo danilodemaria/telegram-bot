@@ -2,6 +2,11 @@ const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
 require('dotenv').config();
 const { formatBRL, numberWithPoints } = require('./utils/Formatters');
+const { download } = require('./utils/downloadVideo');
+var path = require('path');
+var fs = require('fs');
+
+var directoryPath = path.join(__dirname, 'videos');
 
 const token = process.env.TELEGRAM_TOKEN;
 let bot;
@@ -142,4 +147,20 @@ bot.onText(/\/tempo (.+)/, (msg, match) => {
         { parse_mode: 'HTML' }
       );
     });
+});
+
+bot.onText(/\/video (.+)/, (msg, match) => {
+  const chatId = msg.chat.id;
+  const url = match[1];
+  download(url).then((response) => {
+    fs.readdir(directoryPath, function (err, files) {
+      if (err) {
+        return console.log('Unable to scan directory: ' + err);
+      }
+      files.forEach(function (file) {
+        bot.sendVideo(chatId, `./videos/${file}`);
+        fs.unlinkSync(`./videos/${file}`);
+      });
+    });
+  });
 });
