@@ -58,7 +58,7 @@ bot.onText(/\/vinicius/, (msg, match) => {
 
 bot.onText(/\/mike/, (msg, match) => {
   const chatId = msg.chat.id;
-  const msgResponse = `<b>Aprovado no TTC2.</b>`;
+  const msgResponse = `<b>Aprovado no TTC 2.</b>`;
   bot.sendMessage(chatId, msgResponse, { parse_mode: 'HTML' });
 });
 
@@ -107,5 +107,39 @@ bot.onText(/\/covid/, (msg, match) => {
     .catch((error) => {
       const errorText = `<b>Ocorreu um erro ao buscar o valor do dolar. Tente novamente mais tarde.</b>`;
       bot.sendMessage(chatId, errorText, { parse_mode: 'HTML' });
+    });
+});
+
+bot.onText(/\/tempo (.+)/, (msg, match) => {
+  const chatId = msg.chat.id;
+  const city = match[1];
+  axios
+    .get(`https://goweather.herokuapp.com/weather/${city}`)
+    .then((response) => {
+      const { temperature, wind, description, forecast } = response.data;
+      const condition = description === 'Sunny' ? 'Ensolarado' : description;
+      if (temperature !== '') {
+        const message = `<b>Olá ${
+          msg.from.first_name
+        },\n\nLocal: ${city.toUpperCase()}\n\nTemperatura Atual: ${temperature}\nVelocidade do Vento: ${wind}\nDescrição: ${condition}\nAmanhã: ${
+          forecast[0].temperature
+        }\nDepois de Amanhã: ${forecast[1].temperature}</b>`;
+        bot.sendMessage(chatId, message, { parse_mode: 'HTML' });
+      } else {
+        bot.sendMessage(
+          chatId,
+          `<b>Olá ${msg.from.first_name},\n\nCidade não encontrada, insira um nome válido.</b>`,
+          {
+            parse_mode: 'HTML',
+          }
+        );
+      }
+    })
+    .catch((error) => {
+      bot.sendMessage(
+        chatId,
+        `<b>Olá ${msg.from.first_name},\n\nCidade não encontrada, insira um nome válido.</b>`,
+        { parse_mode: 'HTML' }
+      );
     });
 });
