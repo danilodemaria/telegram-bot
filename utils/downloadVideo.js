@@ -1,6 +1,7 @@
 const fs = require('fs');
 const ytdl = require('ytdl-core');
 const { randonName } = require('./Formatters');
+var pathToFfmpeg = require('ffmpeg-static');
 const YoutubeMp3Downloader = require('youtube-mp3-downloader');
 var path = require('path');
 var directoryPath = path.join(__dirname, '../audio');
@@ -22,7 +23,8 @@ async function downloadAudio(url, msg) {
   }
 
   const YD = new YoutubeMp3Downloader({
-    ffmpegPath: 'C:/ffmpeg/bin/ffmpeg.exe', // FFmpeg binary location
+    ffmpegPath: pathToFfmpeg, // FFmpeg binary location
+    // ffmpegPath: 'C:/ffmpeg/bin/ffmpeg.exe', // FFmpeg binary location
     outputPath: './audio', // Output file location (default: the home directory)
     youtubeVideoQuality: 'highestaudio', // Desired video quality (default: highestaudio)
     queueParallelism: 2, // Download parallelism (default: 1)
