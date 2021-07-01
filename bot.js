@@ -1,10 +1,25 @@
 const TelegramBot = require('node-telegram-bot-api');
+const TeleBot = require('telebot');
 const axios = require('axios');
 require('dotenv').config();
 const { formatBRL, numberWithPoints } = require('./utils/Formatters');
-const { download } = require('./utils/downloadVideo');
+const { download, downloadAudio } = require('./utils/downloadVideo');
 var path = require('path');
 var fs = require('fs');
+const ytdl = require('ytdl-core');
+
+const botAudio = new TeleBot(process.env.TELEGRAM_AUDIO_TOKEN);
+botAudio.on('text', (msg) => {
+  let url = msg.text;
+  if (ytdl.validateURL(url)) {
+    msg.reply.text('Aguarde, estamos processando sua música...');
+    downloadAudio(url, msg);
+  } else {
+    msg.reply.text('Nenhum vídeo encontrado');
+  }
+});
+
+botAudio.start();
 
 var directoryPath = path.join(__dirname, 'videos');
 
@@ -104,7 +119,7 @@ bot.onText(/\/covid/, (msg, match) => {
         confirmados
       )}\nCasos recuperados: ${numberWithPoints(
         recuperados
-      )}\nMortes: ${numberWithPoints(mortes)}\n      
+      )}\nMortes: ${numberWithPoints(mortes)}\n
       </b>`;
 
       bot.sendMessage(chatId, covidInfo, { parse_mode: 'HTML' });
@@ -152,6 +167,13 @@ bot.onText(/\/tempo (.+)/, (msg, match) => {
 bot.onText(/\/video (.+)/, (msg, match) => {
   const chatId = msg.chat.id;
   const url = match[1];
+  bot.sendMessage(
+    chatId,
+    'Solicitação recebida, aguarde estamos processando seu video...',
+    {
+      parse_mode: 'HTML',
+    }
+  );
   download(url).then((response) => {
     fs.readdir(directoryPath, function (err, files) {
       if (err) {
