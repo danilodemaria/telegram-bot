@@ -16,12 +16,6 @@ async function download(url) {
 }
 
 async function downloadAudio(url, msg) {
-  let video_id = url.split('v=')[1];
-  const ampersandPosition = video_id.indexOf('&');
-  if (ampersandPosition != -1) {
-    video_id = video_id.substring(0, ampersandPosition);
-  }
-
   const YD = new YoutubeMp3Downloader({
     ffmpegPath: pathToFfmpeg, // FFmpeg binary location
     // ffmpegPath: 'C:/ffmpeg/bin/ffmpeg.exe', // FFmpeg binary location
@@ -32,7 +26,7 @@ async function downloadAudio(url, msg) {
     allowWebm: false, // Enable download from WebM sources (default: false)
   });
   console.log('iniciando');
-  YD.download(video_id);
+  YD.download(get_video_id(url));
 
   YD.on('finished', function (err, data) {
     fs.readdir(directoryPath, function (err, files) {
@@ -53,6 +47,12 @@ async function downloadAudio(url, msg) {
   YD.on('progress', function (progress) {
     console.log(JSON.stringify(progress));
   });
+}
+
+function get_video_id(input) {
+  return input.match(
+    /(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/user\/\S+|\/ytscreeningroom\?v=|\/sandalsResorts#\w\/\w\/.*\/))([^\/&]{10,12})/
+  )[1];
 }
 
 module.exports = {
